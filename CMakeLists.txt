@@ -1,51 +1,42 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 
-project(uboost-coro LANGUAGES ASM C CXX)
+project(coroutine CXX ASM)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include(GNUInstallDirs)
 
-add_executable(uboost-coro
-    sample/main.cpp
+if(UBOOST_CORO_USE_BOOST)
+    add_library(${PROJECT_NAME} INTERFACE)
+    target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
-    include/uboost/context/stack_context.hpp
-    include/uboost/context/fiber_traits.hpp
-    include/uboost/context/fiber.hpp
-    include/uboost/context/uboost_fiber.hpp
-    include/uboost/context/boost_fiber.hpp
-    include/uboost/context/fcontext.hpp
-    include/uboost/context/stop_token.hpp
-
-    include/uboost/coroutine/coroutine.hpp
-    include/uboost/coroutine/detail/push_coroutine.hpp
-    include/uboost/coroutine/detail/pull_coroutine.hpp
-
-    include/uboost/coroutine/detail/push_coroutine_impl.hpp
-    include/uboost/coroutine/detail/pull_coroutine_impl.hpp
-
-    include/uboost/coroutine/detail/push_control_block_decl.hpp
-    include/uboost/coroutine/detail/pull_control_block_decl.hpp
-    )
-
-message(${CMAKE_SYSTEM_NAME})
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Generic")
-    add_library(platform STATIC
-        src/make_arm_none_cortexm3_nofp.S
-        src/jump_arm_none_cortexm3_nofp.S
-        /opt/cross/targets/stellaris/lm3s811/startup.c
-        /opt/cross/targets/stellaris/lm3s811/system_init.c
-        )
-
-    target_link_libraries(uboost-coro PUBLIC platform)
-
-    set(LINKER_SCRIPT "/opt/cross/targets/atmel/atsam4sd32c/linker.ld")
-    #set(LINKER_SCRIPT "/opt/cross/targets/stellaris/lm3s811/linker.ld")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${LINKER_SCRIPT}")
-else()
     find_package(Boost REQUIRED COMPONENTS context)
-    target_link_libraries(uboost-coro PUBLIC Boost::context)
-    target_compile_definitions(uboost-coro PUBLIC UBOOST_USE_BOOST)
+    target_link_libraries(${PROJECT_NAME} INTERFACE Boost::context)
+    target_compile_definitions(${PROJECT_NAME} INTERFACE UBOOST_USE_BOOST)
+    target_include_directories(${PROJECT_NAME} INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+elseif(UBOOST_CORO_IMPL)
+    add_library(${PROJECT_NAME} STATIC
+        src/make_${UBOOST_CORO_IMPL}.S
+        src/make_${UBOOST_CORO_IMPL}.S
+    )
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+    set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "uboost_")
+else()
+    message(FATAL_ERROR "Either UBOOST_CORO_USE_BOOST or UBOOST_CORO_IMPL must be set")
 endif()
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}_targets
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
-target_include_directories(uboost-coro PUBLIC include)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(EXPORT ${PROJECT_NAME}_targets
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/uboost
+    NAMESPACE uboost::
+    FILE ${PROJECT_NAME}-config.cmake
+)
