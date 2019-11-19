@@ -4,7 +4,7 @@ project(coroutine CXX ASM)
 
 include(GNUInstallDirs)
 
-if(UBOOST_CORO_USE_BOOST)
+if(UBOOST_CORO_USE_BOOST OR UBOOST_CORO_IMPL STREQUAL "boost")
     add_library(${PROJECT_NAME} INTERFACE)
     target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
