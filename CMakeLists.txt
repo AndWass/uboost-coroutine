@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(coroutine CXX ASM)
+project(uboost_coroutine CXX ASM)
 
 include(GNUInstallDirs)
 
@@ -24,7 +24,7 @@ elseif(UBOOST_CORO_IMPL)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
-    set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "uboost_")
+    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 else()
     message(FATAL_ERROR "Either UBOOST_CORO_USE_BOOST or UBOOST_CORO_IMPL must be set")
 endif()
@@ -36,7 +36,7 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}_targets
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT ${PROJECT_NAME}_targets
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/uboost
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}
     NAMESPACE uboost::
     FILE ${PROJECT_NAME}-config.cmake
 )

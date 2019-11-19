@@ -14,7 +14,7 @@ class UboostcoroutineConan(ConanFile):
     default_options = {"impl": "boost"}
     generators = "cmake"
     exports_sources = "CMakeLists.txt", "src/*", "include/*"
-    
+
     def requirements(self):
         if self.options.impl == "boost":
             self.requires("boost/[1.x]")
@@ -34,5 +34,5 @@ class UboostcoroutineConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = ["uboost_coroutine"]
-
+        if self.options.impl == "boost":
+            self.cpp_info.defines = ["UBOOST_USE_BOOST"]
