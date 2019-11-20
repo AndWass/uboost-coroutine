@@ -16,7 +16,7 @@
  *
  ****************************************************/
 
-.file "jump_arm_none_cortexm3_nofp.S"
+.file "jump_aarch32_aapcs_nofp.S"
 .text
 .globl jump_fcontext
 .align 2

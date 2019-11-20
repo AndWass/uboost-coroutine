@@ -10,9 +10,8 @@ class UboostcoroutineConan(ConanFile):
     description = "Stackful coroutines for embedded targets."
     topics = ("embedded", "c++", "coroutine")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"impl": ["boost", "arm_none_eabi_cortex_nofp"]}
+    options = {"impl": ["boost", "aarch32_aapcs_nofp"]}
     default_options = {"impl": "boost"}
-    generators = "cmake"
     exports_sources = "CMakeLists.txt", "src/*", "include/*"
 
     def requirements(self):
@@ -36,3 +35,5 @@ class UboostcoroutineConan(ConanFile):
     def package_info(self):
         if self.options.impl == "boost":
             self.cpp_info.defines = ["UBOOST_USE_BOOST"]
+        else:
+            self.cpp_info.libs = ["uboost_coroutine"]

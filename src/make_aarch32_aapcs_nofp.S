@@ -12,7 +12,7 @@
  *
  ****************************************************/
 
-.file "make_arm_none_cortexm3_nofp.S"
+.file "make_aarch32_aapcs_nofp.S"
 .text
 .globl make_fcontext
 .align 2
