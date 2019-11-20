@@ -8,7 +8,7 @@ namespace detail
 {
 struct stop_state
 {
-    bool stopped_;
+    bool stopped_ = false;
 };
 } // namespace detail
 
@@ -25,6 +25,10 @@ public:
 
     void request_stop() noexcept {
         state_->stopped_ = true;
+    }
+
+    explicit operator bool() const noexcept {
+        return is_stopped();
     }
 
 private:

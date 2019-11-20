@@ -15,13 +15,20 @@ namespace detail
 template <class Fn>
 struct wrap_uboost_fn
 {
-    static auto wrap(Fn &&fn, stop_token stopper) {
+    static auto wrap(Fn &&fn, stop_state* stopper) {
         return [f = std::forward<Fn>(fn),
                 stopper](boost::context::fiber &&ctx) mutable -> boost::context::fiber {
-            return f(std::move(ctx), stopper).fib_;
+            return f({stopper, std::move(ctx)}, stop_token(stopper)).fib_;
         };
     }
 };
+
+uboost::context::detail::stop_state* make_stop_state(stack_context sc) {
+    std::uintptr_t ptr_val = reinterpret_cast<std::uintptr_t>(sc.sp) + sc.size;
+    ptr_val -= sizeof(stop_state);
+    ptr_val &= ~static_cast<std::uintptr_t>((alignof(stop_state)-1));
+    return ::new(reinterpret_cast<void*>(ptr_val)) stop_state;
+}
 } // namespace detail
 
 class fiber
@@ -29,18 +36,19 @@ class fiber
     template <class Fn>
     friend struct detail::wrap_uboost_fn;
 
-    uboost::context::detail::stop_state stop_state_;
+    uboost::context::detail::stop_state* stop_state_ = nullptr;
     boost::context::fiber fib_;
 
-    fiber(boost::context::fiber &&fib) : fib_(std::move(fib)) {
+    fiber(uboost::context::detail::stop_state* ss,
+        boost::context::fiber &&fib) : stop_state_(ss), fib_(std::move(fib)) {
     }
 
 public:
-    template <class Fn>
-    fiber(stack_context, Fn &&fn) noexcept
-        : fib_(detail::wrap_uboost_fn<std::decay_t<Fn>>::wrap(std::forward<Fn>(fn),
-                                                              {& stop_state_})) {
-        static_assert(is_fiber_invocable<Fn>, "Fn is not a fiber invocable");
+    template <class Fn, std::enable_if_t<is_fiber_invocable<Fn>>* = nullptr>
+    fiber(stack_context stack, Fn &&fn) noexcept
+        : stop_state_(detail::make_stop_state(stack)),
+        fib_(detail::wrap_uboost_fn<std::decay_t<Fn>>::wrap(std::forward<Fn>(fn),
+                                                              {stop_state_})) {
     }
 
     ~fiber() {
@@ -62,32 +70,32 @@ public:
 
     fiber resume() && noexcept {
         try {
-            return std::move(fib_).resume();
+            return {stop_state_, std::move(fib_).resume()};
         }
         catch (boost::context::detail::forced_unwind &unwind) {
             unwind.caught = true;
-            return boost::context::fiber();
+            return {stop_state_, boost::context::fiber()};
         }
     }
 
     template <class Fn>
     fiber resume_with(Fn &&fn) && noexcept {
         try {
-            return std::move(fib_).resume_with(
-                detail::wrap_uboost_fn<std::decay_t<Fn>>::wrap(std::forward<Fn>(fn)));
+            return {stop_state_, std::move(fib_).resume_with(
+                detail::wrap_uboost_fn<std::decay_t<Fn>>::wrap(std::forward<Fn>(fn), {stop_state_}))};
         }
         catch (boost::context::detail::forced_unwind &unwind) {
             unwind.caught = true;
-            return boost::context::fiber();
+            return {stop_state_, boost::context::fiber()};
         }
     }
 
     void request_stop() noexcept {
-        stop_state_.stopped_ = true;
+        stop_state_->stopped_ = true;
     }
 
     explicit operator bool() const noexcept {
-        return bool(fib_) && !stop_state_.stopped_;
+        return bool(fib_) && !stop_state_->stopped_;
     }
 
     bool operator!() const noexcept {
