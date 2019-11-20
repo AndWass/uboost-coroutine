@@ -4,7 +4,7 @@ project(uboost_coroutine CXX ASM)
 
 include(GNUInstallDirs)
 
-if(UBOOST_CORO_USE_BOOST OR UBOOST_CORO_IMPL STREQUAL "boost")
+if(UBOOST_CORO_IMPL STREQUAL "boost")
     add_library(${PROJECT_NAME} INTERFACE)
     target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
@@ -15,19 +15,20 @@ if(UBOOST_CORO_USE_BOOST OR UBOOST_CORO_IMPL STREQUAL "boost")
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
-elseif(UBOOST_CORO_IMPL)
+elseif(NOT UBOOST_CORO_IMPL STREQUAL "")
     add_library(${PROJECT_NAME} STATIC
         src/make_${UBOOST_CORO_IMPL}.S
-        src/make_${UBOOST_CORO_IMPL}.S
+        src/jump_${UBOOST_CORO_IMPL}.S
     )
     target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
-    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 else()
-    message(FATAL_ERROR "Either UBOOST_CORO_USE_BOOST or UBOOST_CORO_IMPL must be set")
+    message(FATAL_ERROR "Either UBOOST_CORO_IMPL must be set. Valid values are 'boost' and 'aarch32_aapcs_nofp'")
 endif()
+add_library(uboost::coroutine ALIAS ${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}_targets
     ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -40,3 +41,7 @@ install(EXPORT ${PROJECT_NAME}_targets
     NAMESPACE uboost::
     FILE ${PROJECT_NAME}-config.cmake
 )
+
+if(BUILD_SAMPLES)
+    add_subdirectory(samples)
+endif()
