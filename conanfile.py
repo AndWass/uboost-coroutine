@@ -4,9 +4,9 @@ from conans import ConanFile, CMake
 class UboostcoroutineConan(ConanFile):
     name = "uboost_coroutine"
     version = "0.1.0"
-    license = "Boost 1.0"
+    license = "BSL-1.0"
     author = "Andreas Wass wass.andreas@gmail.com"
-    url = ""
+    url = "https://gitlab.com/AndWass/uboost-coroutine"
     description = "Stackful coroutines for embedded targets."
     topics = ("embedded", "c++", "coroutine")
     settings = "os", "compiler", "build_type", "arch"
