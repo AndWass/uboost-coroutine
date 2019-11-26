@@ -36,6 +36,14 @@ push_coroutine<T>::push_control_block::push_control_block(uboost::context::stack
     fiber_ = std::move(fiber_).resume();
 }
 
+template<class T>
+push_coroutine<T>::push_control_block::~push_control_block() noexcept {
+    if(other_) {
+        // Reset the other pointer to me!
+        other_->other_ = nullptr;
+    }
+}
+
 template <class T>
 template <class Fn>
 push_coroutine<T>::push_coroutine(uboost::context::stack_context stack, Fn &&fn) noexcept {

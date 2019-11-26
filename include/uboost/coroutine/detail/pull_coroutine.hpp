@@ -40,6 +40,8 @@ public:
     explicit operator bool() const noexcept;
     // bool operator!() const noexcept;
     T get() noexcept;
+
+    void stop() noexcept;
 };
 } // namespace detail
 } // namespace coroutine
