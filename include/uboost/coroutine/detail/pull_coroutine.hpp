@@ -35,6 +35,8 @@ public:
     pull_coroutine(pull_coroutine const &) = delete;
     pull_coroutine &operator=(pull_coroutine const &) = delete;
 
+    template<class Fn>
+    pull_coroutine& map_and_pull(Fn &&fn) noexcept;
     // pull_coroutine(pull_coroutine &&) noexcept;
     pull_coroutine &operator()() noexcept;
     explicit operator bool() const noexcept;

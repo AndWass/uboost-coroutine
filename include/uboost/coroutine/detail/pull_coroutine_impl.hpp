@@ -59,6 +59,16 @@ pull_coroutine<T>::~pull_coroutine() noexcept {
     }
 }
 
+template<class T>
+template<class Fn>
+pull_coroutine<T> &pull_coroutine<T>::map_and_pull(Fn &&fn) noexcept {
+    if(*this) {
+        fn(get());
+        (*this)();
+    }
+    return *this;
+}
+
 template <class T>
 pull_coroutine<T> &pull_coroutine<T>::operator()() noexcept {
     cb_->fiber_ = std::move(cb_->fiber_).resume();
