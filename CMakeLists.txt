@@ -4,18 +4,29 @@ project(uboost_coroutine CXX ASM)
 
 include(GNUInstallDirs)
 
+set(UBOOST_CORO_USE_CONAN OFF)
+if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup(TARGETS)
+    set(UBOOST_CORO_USE_CONAN ON)
+endif()
+
 if(UBOOST_CORO_IMPL STREQUAL "boost")
     add_library(${PROJECT_NAME} INTERFACE)
     target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
-    find_package(Boost REQUIRED COMPONENTS context)
-    target_link_libraries(${PROJECT_NAME} INTERFACE Boost::context)
+    if(UBOOST_CORO_USE_CONAN)
+        target_link_libraries(${PROJECT_NAME} INTERFACE CONAN_LIB::boost_boost_context)
+    else()
+        find_package(Boost REQUIRED COMPONENTS context)
+        target_link_libraries(${PROJECT_NAME} INTERFACE Boost::context)
+    endif()
     target_compile_definitions(${PROJECT_NAME} INTERFACE UBOOST_USE_BOOST)
     target_include_directories(${PROJECT_NAME} INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
-elseif(NOT UBOOST_CORO_IMPL STREQUAL "")
+elseif(NOT "${UBOOST_CORO_IMPL}" STREQUAL "")
     add_library(${PROJECT_NAME} STATIC
         src/make_${UBOOST_CORO_IMPL}.S
         src/jump_${UBOOST_CORO_IMPL}.S
@@ -42,6 +53,10 @@ install(EXPORT ${PROJECT_NAME}_targets
     FILE ${PROJECT_NAME}-config.cmake
 )
 
-if(BUILD_SAMPLES)
+if(UBOOST_CORO_BUILD_SAMPLES)
     add_subdirectory(samples)
+endif()
+
+if(UBOOST_CORO_BUILD_TESTS)
+    add_subdirectory(test)
 endif()

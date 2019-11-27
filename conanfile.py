@@ -10,17 +10,22 @@ class UboostcoroutineConan(ConanFile):
     description = "Stackful coroutines for embedded targets."
     topics = ("embedded", "c++", "coroutine")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"impl": ["boost", "aarch32_aapcs_nofp"]}
-    default_options = {"impl": "boost"}
+    options = {"impl": ["boost", "aarch32_aapcs_nofp"], "build_tests": [True, False],
+        "build_samples": [True, False]}
+    default_options = {"impl": "boost", "build_tests": False, "build_samples": False}
     exports_sources = "CMakeLists.txt", "src/*", "include/*"
 
     def requirements(self):
         if self.options.impl == "boost":
-            self.requires("boost/[1.x]")
+            self.requires("boost/[>=1.70]@conan/stable")
+        if self.options.build_tests == True:
+            self.requires("doctest/[>=2.3]@bincrafters/stable")
 
     def _configure_cmake(self):
         cmake = CMake(self)
         cmake.definitions["UBOOST_CORO_IMPL"] = self.options.impl
+        cmake.definitions["UBOOST_CORO_BUILD_TESTS"] = self.options.build_tests
+        cmake.definitions["UBOOST_CORO_BUILD_SAMPLES"] = self.options.build_samples
         cmake.configure()
         return cmake
 
