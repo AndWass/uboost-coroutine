@@ -62,5 +62,6 @@ if(UBOOST_CORO_BUILD_SAMPLES)
 endif()
 
 if(UBOOST_CORO_BUILD_TESTS)
+    enable_testing()
     add_subdirectory(test)
 endif()
