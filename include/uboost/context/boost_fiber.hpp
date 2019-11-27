@@ -29,6 +29,12 @@ uboost::context::detail::stop_state* make_stop_state(stack_context sc) {
     ptr_val &= ~static_cast<std::uintptr_t>((alignof(stop_state)-1));
     return ::new(reinterpret_cast<void*>(ptr_val)) stop_state;
 }
+void handle_unwind_exception(boost::context::detail::forced_unwind &unwind)
+{
+    #ifndef BOOST_ASSERT_IS_VOID
+    unwind.caught = true;
+    #endif
+}
 } // namespace detail
 
 class fiber
@@ -60,7 +66,7 @@ public:
                     });
             }
             catch (boost::context::detail::forced_unwind &unwind) {
-                unwind.caught = true;
+                detail::handle_unwind_exception(unwind);
             }
         }
     }
@@ -73,7 +79,7 @@ public:
             return {stop_state_, std::move(fib_).resume()};
         }
         catch (boost::context::detail::forced_unwind &unwind) {
-            unwind.caught = true;
+            detail::handle_unwind_exception(unwind);
             return {stop_state_, boost::context::fiber()};
         }
     }
@@ -85,7 +91,7 @@ public:
                 detail::wrap_uboost_fn<std::decay_t<Fn>>::wrap(std::forward<Fn>(fn), {stop_state_}))};
         }
         catch (boost::context::detail::forced_unwind &unwind) {
-            unwind.caught = true;
+            detail::handle_unwind_exception(unwind);
             return {stop_state_, boost::context::fiber()};
         }
     }
