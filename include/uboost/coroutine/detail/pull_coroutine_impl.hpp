@@ -22,7 +22,7 @@ pull_coroutine<T>::pull_control_block::pull_control_block(uboost::context::stack
                  this->other_ = &pcb;
                  push_coroutine<T> push(typename push_coroutine<T>::preallocated{}, &pcb);
                  auto fn = std::move(fn_);
-                 fn(push);
+                 fn_(push);
                  push.cb_ = nullptr;
                  return std::move(pcb.fiber_);
              }) {
