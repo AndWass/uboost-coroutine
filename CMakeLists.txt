@@ -11,12 +11,16 @@ if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     set(UBOOST_CORO_USE_CONAN ON)
 endif()
 
+set(UBOOST_CORO_IMPL "" CACHE STRING "Fiber implementation to use")
+option(UBOOST_CORO_BUILD_SAMPLES "Build samples")
+option(UBOOST_CORO_BUILD_TESTS "Build tests")
+
 if(UBOOST_CORO_IMPL STREQUAL "boost")
     add_library(${PROJECT_NAME} INTERFACE)
     target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
     if(UBOOST_CORO_USE_CONAN)
-        target_link_libraries(${PROJECT_NAME} INTERFACE CONAN_LIB::boost_boost_context)
+        target_link_libraries(${PROJECT_NAME} INTERFACE CONAN_PKG::boost)
     else()
         find_package(Boost REQUIRED COMPONENTS context)
         target_link_libraries(${PROJECT_NAME} INTERFACE Boost::context)
