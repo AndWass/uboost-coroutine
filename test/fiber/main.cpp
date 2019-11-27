@@ -34,3 +34,28 @@ TEST_CASE("fiber_stop_token_propogated")
     REQUIRE(stop_set);
     REQUIRE_FALSE(bool(fib));
 }
+
+TEST_CASE("fiber_reentry")
+{
+    std::uint32_t stack[128];
+    int sum = 0;
+    uboost::context::fiber fib(stack, [&sum](uboost::context::fiber &&fib, uboost::context::stop_token st) {
+        sum++;
+        fib = std::move(fib).resume();
+        sum++;
+        fib = std::move(fib).resume();
+        sum++;
+        fib = std::move(fib).resume();
+        sum++;
+        return std::move(fib);
+    });
+
+    int i=0;
+    while(fib)
+    {
+        REQUIRE(sum == i);
+        fib = std::move(fib).resume();
+        i++;
+    }
+    REQUIRE(sum == 4);
+}
