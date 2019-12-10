@@ -81,7 +81,7 @@ pull_coroutine<T>::operator bool() const noexcept {
 }
 
 template <class T>
-T pull_coroutine<T>::get() noexcept {
+T pull_coroutine<T>::get() const noexcept {
     return *cb_->value_ptr();
 }
 

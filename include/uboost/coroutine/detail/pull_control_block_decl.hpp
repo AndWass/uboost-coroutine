@@ -35,6 +35,11 @@ struct pull_coroutine<T>::pull_control_block
     T *value_ptr() noexcept {
         return std::launder(static_cast<T *>(static_cast<void *>(value_storage_)));
     }
+
+
+    const T *value_ptr() const noexcept {
+        return std::launder(static_cast<const T *>(static_cast<const void *>(value_storage_)));
+    }
 };
 } // namespace detail
 } // namespace coroutine
