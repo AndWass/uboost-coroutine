@@ -90,3 +90,41 @@ TEST_CASE("pull_coroutine: dereference iterator") {
     CHECK_EQ(i, 10);
     CHECK_FALSE(puller);
 }
+
+TEST_CASE("push_coroutine: explicit output iterator") {
+    std::uint32_t stack[128];
+    uboost::coroutine::coroutine<int>::pull_type puller(stack, [](auto &pusher) {
+        auto out = pusher.begin();
+        for (int i = 0; i < 10; i++) {
+            *out++ = i;
+        }
+    });
+
+    int i = 0;
+    for (auto v : puller) {
+        CHECK_EQ(v, i);
+        i++;
+    }
+    CHECK_EQ(i, 10);
+    CHECK_FALSE(puller);
+}
+
+TEST_CASE("push_coroutine: copy algorithm") {
+    std::uint32_t stack[128];
+    uboost::coroutine::coroutine<char>::pull_type puller(stack, [](auto &pusher) {
+        std::string str = "hello world";
+        std::copy(str.begin(), str.end(), pusher.begin());
+    });
+    std::string str(puller.begin(), puller.end());
+    REQUIRE_EQ(str, "hello world");
+}
+
+TEST_CASE("push_coroutine: ADL begin and end") {
+    std::uint32_t stack[128];
+    uboost::coroutine::coroutine<char>::pull_type puller(stack, [](auto &pusher) {
+        std::string str = "hello world";
+        std::copy(str.begin(), str.end(), begin(pusher));
+    });
+    std::string str(puller.begin(), puller.end());
+    REQUIRE_EQ(str, "hello world");
+}
