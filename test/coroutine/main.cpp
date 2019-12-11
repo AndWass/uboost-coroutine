@@ -46,9 +46,7 @@ TEST_CASE("pull_coroutine: iteration with iterators") {
         CHECK_EQ(i, 10);
         CHECK_FALSE(puller);
     }
-    SUBCASE("pull_coroutine: ADL") {
-        using std::begin;
-        using std::end;
+    SUBCASE("pull_coroutine: ADL begin and end") {
         int i = 0;
 
         for (auto iter = begin(puller); iter != end(puller); iter++) {
@@ -119,7 +117,7 @@ TEST_CASE("push_coroutine: copy algorithm") {
     REQUIRE_EQ(str, "hello world");
 }
 
-TEST_CASE("push_coroutine: ADL begin and end") {
+TEST_CASE("push_coroutine: ADL begin") {
     std::uint32_t stack[128];
     uboost::coroutine::coroutine<char>::pull_type puller(stack, [](auto &pusher) {
         std::string str = "hello world";
