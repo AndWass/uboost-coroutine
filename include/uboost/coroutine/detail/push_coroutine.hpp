@@ -55,7 +55,7 @@ public:
         using difference_type = void;
         using iterator_category = std::output_iterator_tag;
 
-        iterator() noexcept = default;
+        constexpr iterator() noexcept = default;
         explicit iterator(push_coroutine &pc) noexcept : coro_(&pc) {
         }
 

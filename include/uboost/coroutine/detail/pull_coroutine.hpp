@@ -49,12 +49,10 @@ public:
     void stop() noexcept;
 
     class iterator;
-    class const_iterator;
 
     class iterator
     {
         pull_coroutine *coro_ = nullptr;
-        friend class const_iterator;
 
     public:
         using value_type = std::remove_reference_t<T>;
@@ -63,7 +61,7 @@ public:
         using difference_type = std::ptrdiff_t;
         using iterator_category = std::input_iterator_tag;
 
-        iterator() noexcept = default;
+        constexpr iterator() noexcept = default;
         explicit iterator(pull_coroutine &pc) noexcept : coro_(nullptr) {
             if (pc) {
                 coro_ = &pc;
