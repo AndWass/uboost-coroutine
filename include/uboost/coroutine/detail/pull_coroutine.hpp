@@ -41,9 +41,13 @@ public:
     template <class Fn>
     pull_coroutine &map_and_pull(Fn &&fn) noexcept;
     // pull_coroutine(pull_coroutine &&) noexcept;
+    
     pull_coroutine &operator()() noexcept;
+
+    bool is_valid() const noexcept;
     explicit operator bool() const noexcept;
-    // bool operator!() const noexcept;
+    bool operator!() const noexcept;
+    
     T get() const noexcept;
 
     void stop() noexcept;

@@ -38,9 +38,9 @@ public:
     push_coroutine &operator()(T const &) noexcept;
     push_coroutine &operator()(T &&) noexcept;
 
+    bool is_valid() const noexcept;
     explicit operator bool() const noexcept;
-
-    // bool operator!() const noexcept;
+    bool operator!() const noexcept;
 
     void stop() noexcept;
 

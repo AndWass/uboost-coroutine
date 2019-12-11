@@ -126,3 +126,31 @@ TEST_CASE("push_coroutine: ADL begin") {
     std::string str(puller.begin(), puller.end());
     REQUIRE_EQ(str, "hello world");
 }
+
+TEST_CASE("pull_coroutine: is_valid")
+{
+    std::uint32_t stack[128];
+    uboost::coroutine::coroutine<int>::pull_type puller(stack, [](auto &pusher) { pusher(10); });
+    REQUIRE(puller);
+    REQUIRE(puller.is_valid());
+    REQUIRE(!!puller);
+    puller();
+    REQUIRE_FALSE(puller);
+    REQUIRE_FALSE(puller.is_valid());
+    REQUIRE_FALSE(!!puller);
+    REQUIRE(!puller);
+}
+
+TEST_CASE("push_coroutine: is_valid")
+{
+    std::uint32_t stack[128];
+    uboost::coroutine::coroutine<int>::push_type pusher(stack, [](auto &puller) { });
+    REQUIRE(pusher);
+    REQUIRE(pusher.is_valid());
+    REQUIRE(!!pusher);
+    pusher(0);
+    REQUIRE_FALSE(pusher);
+    REQUIRE_FALSE(pusher.is_valid());
+    REQUIRE_FALSE(!!pusher);
+    REQUIRE(!pusher);
+}

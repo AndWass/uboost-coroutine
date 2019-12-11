@@ -75,9 +75,19 @@ pull_coroutine<T> &pull_coroutine<T>::operator()() noexcept {
     return *this;
 }
 
+template<class T>
+bool pull_coroutine<T>::is_valid() const noexcept {
+    return bool(cb_->fiber_) && cb_->valid_ && cb_->other_;
+}
+
 template <class T>
 pull_coroutine<T>::operator bool() const noexcept {
-    return bool(cb_->fiber_) && cb_->valid_ && cb_->other_;
+    return is_valid();
+}
+
+template<class T>
+bool pull_coroutine<T>::operator!() const noexcept {
+    return !is_valid();
 }
 
 template <class T>

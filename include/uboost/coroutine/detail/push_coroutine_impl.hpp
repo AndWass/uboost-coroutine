@@ -21,7 +21,7 @@ template <class Fn>
 push_coroutine<T>::push_control_block::push_control_block(uboost::context::stack_context stack,
                                                           Fn &&fn) noexcept
     : fiber_(stack,
-             [this, fn_ = std::forward<Fn>(fn)](uboost::context::fiber && fib,
+             [this, fn_ = std::forward<Fn>(fn)](uboost::context::fiber &&fib,
                                                 uboost::context::stop_token stop_token) mutable {
                  using pcb_t = typename pull_coroutine<T>::pull_control_block;
                  pcb_t pcb(std::move(fib), this);
@@ -36,9 +36,9 @@ push_coroutine<T>::push_control_block::push_control_block(uboost::context::stack
     fiber_ = std::move(fiber_).resume();
 }
 
-template<class T>
+template <class T>
 push_coroutine<T>::push_control_block::~push_control_block() noexcept {
-    if(other_) {
+    if (other_) {
         // Reset the other pointer to me!
         other_->other_ = nullptr;
     }
@@ -63,12 +63,22 @@ push_coroutine<T>::~push_coroutine() noexcept {
 }
 
 template <class T>
-push_coroutine<T>::operator bool() const noexcept {
+bool push_coroutine<T>::is_valid() const noexcept {
     return bool(cb_->fiber_) && !cb_->stopped_;
 }
 
 template <class T>
-push_coroutine<T> &push_coroutine<T>::operator()(const T & val) noexcept {
+push_coroutine<T>::operator bool() const noexcept {
+    return is_valid();
+}
+
+template <class T>
+bool push_coroutine<T>::operator!() const noexcept {
+    return !is_valid();
+}
+
+template <class T>
+push_coroutine<T> &push_coroutine<T>::operator()(const T &val) noexcept {
     if (cb_->other_->valid_) {
         cb_->other_->value_ptr()->~T();
     }
@@ -79,7 +89,7 @@ push_coroutine<T> &push_coroutine<T>::operator()(const T & val) noexcept {
 }
 
 template <class T>
-push_coroutine<T> &push_coroutine<T>::operator()(T && val) noexcept {
+push_coroutine<T> &push_coroutine<T>::operator()(T &&val) noexcept {
     if (cb_->other_->valid_) {
         cb_->other_->value_ptr()->~T();
     }
