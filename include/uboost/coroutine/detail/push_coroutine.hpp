@@ -98,6 +98,43 @@ public:
         return iterator();
     }
 };
+
+template <>
+class push_coroutine<void>
+{
+    template <class U>
+    friend class pull_coroutine;
+
+    struct push_control_block;
+
+    push_control_block *cb_;
+
+    struct preallocated
+    {
+    };
+
+    push_coroutine(preallocated, push_control_block *cb) noexcept : cb_(cb) {
+    }
+
+public:
+    template <typename Fn>
+    push_coroutine(uboost::context::stack_context, Fn &&) noexcept;
+
+    ~push_coroutine() noexcept;
+
+    push_coroutine(push_coroutine const &) = delete;
+    push_coroutine &operator=(push_coroutine const &) = delete;
+
+    // push_coroutine(push_coroutine &&) noexcept;
+    push_coroutine &operator()() noexcept;
+
+    bool is_valid() const noexcept;
+    explicit operator bool() const noexcept;
+    bool operator!() const noexcept;
+
+    void stop() noexcept;
+};
+
 template <class T>
 typename push_coroutine<T>::iterator begin(push_coroutine<T> &pc) noexcept {
     return pc.begin();

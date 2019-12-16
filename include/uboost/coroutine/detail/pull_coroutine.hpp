@@ -107,6 +107,42 @@ public:
         return iterator();
     }
 };
+
+template <>
+class pull_coroutine<void>
+{
+    template <class U>
+    friend class push_coroutine;
+
+    struct pull_control_block;
+
+    pull_control_block *cb_;
+
+    struct preallocated
+    {
+    };
+
+    pull_coroutine(preallocated, pull_control_block *cb) noexcept : cb_(cb) {
+    }
+
+public:
+    template <class Fn>
+    explicit pull_coroutine(uboost::context::stack_context stack, Fn &&fn) noexcept;
+
+    ~pull_coroutine() noexcept;
+
+    pull_coroutine(pull_coroutine const &) = delete;
+    pull_coroutine &operator=(pull_coroutine const &) = delete;
+    
+    pull_coroutine &operator()() noexcept;
+
+    bool is_valid() const noexcept;
+    explicit operator bool() const noexcept;
+    bool operator!() const noexcept;
+
+    void stop() noexcept;
+};
+
 template <class T>
 typename pull_coroutine<T>::iterator begin(pull_coroutine<T> &pc) noexcept {
     return pc.begin();

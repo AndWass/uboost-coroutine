@@ -154,3 +154,31 @@ TEST_CASE("push_coroutine: is_valid")
     REQUIRE_FALSE(!!pusher);
     REQUIRE(!pusher);
 }
+
+TEST_CASE("coroutine: void values")
+{
+    std::uint32_t stack[128];
+    bool reentry = false;
+    uboost::coroutine::coroutine<void>::pull_type puller(stack, [&reentry](auto &pusher) { pusher(); reentry = true; });
+    REQUIRE(puller);
+    puller();
+    REQUIRE_FALSE(puller);
+    REQUIRE(reentry);
+}
+
+TEST_CASE("coroutine: stopping void coroutine")
+{
+    std::uint32_t stack[128];
+    bool reentry = false;
+    uboost::coroutine::coroutine<void>::pull_type puller(stack, [&reentry](auto &pusher) {
+        pusher();
+        if(!pusher) {
+            return;
+        }
+        reentry = true;
+    });
+    REQUIRE(puller);
+    puller.stop();
+    REQUIRE_FALSE(puller);
+    REQUIRE_FALSE(reentry);
+}
