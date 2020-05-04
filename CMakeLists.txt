@@ -17,7 +17,6 @@ option(UBOOST_CORO_BUILD_TESTS "Build tests")
 
 if(UBOOST_CORO_IMPL STREQUAL "boost")
     add_library(${PROJECT_NAME} INTERFACE)
-    target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
     if(UBOOST_CORO_USE_CONAN)
         target_link_libraries(${PROJECT_NAME} INTERFACE CONAN_PKG::boost)
@@ -25,7 +24,7 @@ if(UBOOST_CORO_IMPL STREQUAL "boost")
         find_package(Boost REQUIRED COMPONENTS context)
         target_link_libraries(${PROJECT_NAME} INTERFACE Boost::context)
     endif()
-    target_compile_definitions(${PROJECT_NAME} INTERFACE UBOOST_USE_BOOST)
+    target_compile_definitions(${PROJECT_NAME} INTERFACE UBOOST_CORO_USE_BOOST)
     target_include_directories(${PROJECT_NAME} INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -41,7 +40,7 @@ elseif(NOT "${UBOOST_CORO_IMPL}" STREQUAL "")
     )
     set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 else()
-    message(FATAL_ERROR "Either UBOOST_CORO_IMPL must be set. Valid values are 'boost' and 'aarch32_aapcs_nofp'")
+    message(FATAL_ERROR "UBOOST_CORO_IMPL must be set. Valid values are 'boost' and 'aarch32_aapcs_nofp'")
 endif()
 add_library(uboost::coroutine ALIAS ${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}_targets

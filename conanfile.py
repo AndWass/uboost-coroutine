@@ -6,20 +6,24 @@ class UboostcoroutineConan(ConanFile):
     version = "0.1.0"
     license = "BSL-1.0"
     author = "Andreas Wass wass.andreas@gmail.com"
-    url = "https://gitlab.com/AndWass/uboost-coroutine"
+    url = "https://github.com/AndWass/uboost-coroutine"
+
     description = "Stackful coroutines for embedded targets."
+
     topics = ("embedded", "c++", "coroutine")
+
     settings = "os", "compiler", "build_type", "arch"
     options = {"impl": ["boost", "aarch32_aapcs_nofp"], "build_tests": [True, False],
         "build_samples": [True, False]}
     default_options = {"impl": "boost", "build_tests": False, "build_samples": False}
     exports_sources = "CMakeLists.txt", "src/*", "include/*"
+    generators = "cmake"
 
     def requirements(self):
         if self.options.impl == "boost":
-            self.requires("boost/[>=1.70]@conan/stable")
+            self.requires("boost/[>=1.70]")
         if self.options.build_tests == True:
-            self.requires("doctest/[>=2.3]@bincrafters/stable")
+            self.requires("doctest/[>=2.3]")
 
     def _configure_cmake(self):
         cmake = CMake(self)
@@ -39,6 +43,6 @@ class UboostcoroutineConan(ConanFile):
 
     def package_info(self):
         if self.options.impl == "boost":
-            self.cpp_info.defines = ["UBOOST_USE_BOOST"]
+            self.cpp_info.defines = ["UBOOST_CORO_USE_BOOST"]
         else:
             self.cpp_info.libs = ["uboost_coroutine"]

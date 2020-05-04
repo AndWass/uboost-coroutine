@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(UBOOST_USE_BOOST)
+#if defined(UBOOST_CORO_USE_BOOST)
 #include <boost/context/stack_context.hpp>
 #endif
 
@@ -23,7 +23,7 @@ struct stack_context
     stack_context(std::array<T, N> &arr): size(N*sizeof(T)), sp(arr.data()) {}
     stack_context(std::size_t size, void *sp) noexcept : size(size), sp(sp) {}
 
-#if defined(UBOOST_USE_BOOST)
+#if defined(UBOOST_CORO_USE_BOOST)
     operator boost::context::stack_context() noexcept
     {
         return boost::context::stack_context{size, sp};
